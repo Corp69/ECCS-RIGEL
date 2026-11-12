@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { createObserveModule } from '@nestjs/observe';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacturacionModule } from './eccs/facturacion/facturacion.module.js';
+import { CancelacionesModule } from './cancelaciones/cancelaciones.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -33,6 +34,8 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
     //MODULOS
     FacturacionModule,
+
+    CancelacionesModule,
 
 
     // Distributed tracing, auto-correlated logs, request/job metrics, error
