@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { createObserveModule } from '@nestjs/observe';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacturacionModule } from './eccs/facturacion/facturacion.module.js';
-import { CancelacionesModule } from './cancelaciones/cancelaciones.module.js';
+import { CancelacionesModule } from './eccs/cancelaciones/cancelaciones.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -18,11 +18,11 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.getOrThrow<string>('DB_HOST'),
-        port: Number(configService.getOrThrow<string>('DB_PORT')),
-        username: configService.getOrThrow<string>('DB_USERNAME'),
-        password: configService.getOrThrow<string>('DB_PASSWORD'),
-        database: configService.getOrThrow<string>('DB_NAME'),
+        host: configService.getOrThrow<string>('DB_CLIENT1_HOST'),
+        port: Number(configService.getOrThrow<string>('DB_CLIENT1_PORT')),
+        username: configService.getOrThrow<string>('DB_CLIENT1_USER'),
+        password: configService.getOrThrow<string>('DB_CLIENT1_PASS'),
+        database: configService.getOrThrow<string>('DB_CLIENT1_NAME'),
         ssl:
           configService.get<string>('DB_SSL') === 'true'
             ? { rejectUnauthorized: false }
