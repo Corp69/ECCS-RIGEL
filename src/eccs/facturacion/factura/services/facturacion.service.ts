@@ -10,6 +10,7 @@ import { ResponseDto } from '../../../../core/dtos/response.dto.js';
 import { FacturacionDto } from '../dto/facturacion.dto.js';
 import { ValidacionUsuarioRow } from '../interfaces/validacion-usuario.interface.js';
 import { UrlFacturalo } from '../interfaces/url-facturalo.interface.js';
+import { DescuentoCreditoRow } from '../interfaces/descuento-credito.interface.js';
 import { ClientHttp } from '../../../../core/http/client-http.service.js';
 import {
   RespuestaFacturalo,
@@ -73,8 +74,11 @@ export class FacturacionService {
     // Solo "200" es exito en timbrado (el helper lanza el error si no).
     validarRespuestaFacturalo(timbrado, [CODIGO_TIMBRADO_OK], 'el timbrado');
 
+    const creditosRestantes = await this.descontarCredito(dto, cuenta.usuario);
+
     return new ResponseDto(true, titulo, 'Operacion realizada con exito.', {
-      timbrado
+      timbrado,
+      creditos_restantes: creditosRestantes,
     });
 
   }
@@ -124,10 +128,50 @@ export class FacturacionService {
     // Solo "200" es exito en timbrado (el helper lanza el error si no).
     validarRespuestaFacturalo(timbrado, [CODIGO_TIMBRADO_OK], 'el timbrado');
 
+    // Timbre exitoso: se descuenta el credito.
+    // Si el descuento falla NO se lanza error: el CFDI ya esta timbrado y el
+    // cliente debe recibirlo. Se registra para conciliar el credito a mano.
+    const creditosRestantes = await this.descontarCredito(dto, cuenta.usuario);
+
     return new ResponseDto(true, titulo, 'Operacion realizada con exito.', {
-      timbrado
+      timbrado,
+      creditos_restantes: creditosRestantes,
     });
 
+  }
+
+  /**
+   * Descuenta un credito tras un timbrado exitoso.
+   * NO lanza error si falla: el CFDI ya esta timbrado y el cliente debe
+   * recibirlo. Se registra en el log para conciliar el credito a mano.
+   * @returns los creditos restantes, o undefined si no se pudo descontar.
+   */
+  private async descontarCredito(
+    dto: FacturacionDto,
+    usuario: string,
+  ): Promise<number | undefined> {
+    try {
+      const descuento: DescuentoCreditoRow[] = await this.dataSource.query(
+        `select facturalo.fn_get_timbre_correcto($1, $2) as descuento`,
+        [dto.api_key, dto.usuario],
+      );
+
+      const resultado = descuento[0]?.descuento;
+      if (resultado?.success) {
+        return resultado.creditos_restantes;
+      }
+
+      this.logger.error(
+        `Timbrado exitoso pero la funcion no descontó el credito del usuario ${usuario}: ${resultado?.mensaje ?? 'sin respuesta'}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Timbrado exitoso pero NO se pudo descontar el credito del usuario ${usuario}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+    }
+
+    return undefined;
   }
 
   public async getUsuarios(): Promise<ResponseDto<any>> {
