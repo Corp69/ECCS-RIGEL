@@ -60,7 +60,7 @@ export class FacturacionService {
     } catch (error) {
       // Se registra con contexto, sin body ni llaves (son datos sensibles).
       this.logger.error(
-        `Fallo el timbrado en Facturalo para el usuario ${cuenta.usuario}`,
+        `Fallo el timbrado en ECCS para el usuario ${cuenta.usuario}`,
         error instanceof Error ? error.stack : undefined,
       );
 
@@ -68,7 +68,7 @@ export class FacturacionService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new BadGatewayException('No se pudo timbrar en Facturalo.');
+      throw new BadGatewayException('No se pudo timbrar en ECCS.');
     }
 
     // Solo "200" es exito en timbrado (el helper lanza el error si no).
@@ -114,7 +114,7 @@ export class FacturacionService {
     } catch (error) {
       // Se registra con contexto, sin body ni llaves (son datos sensibles).
       this.logger.error(
-        `Fallo el timbrado en Facturalo para el usuario ${cuenta.usuario}`,
+        `Fallo el timbrado en ECCS para el usuario ${cuenta.usuario}`,
         error instanceof Error ? error.stack : undefined,
       );
 
@@ -122,7 +122,7 @@ export class FacturacionService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new BadGatewayException('No se pudo timbrar en Facturalo.');
+      throw new BadGatewayException('No se pudo timbrar en ECCS.');
     }
 
     // Solo "200" es exito en timbrado (el helper lanza el error si no).
